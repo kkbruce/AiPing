@@ -2,6 +2,7 @@
 using Microsoft.ApplicationInsights.Extensibility;
 using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace AiPing
 {
@@ -20,7 +21,7 @@ namespace AiPing
             string aikey = args[1];
 
             // set develop mode
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
+            //TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
             TelemetryConfiguration.Active.InstrumentationKey = aikey;
             var client = new TelemetryClient();
 
@@ -37,6 +38,7 @@ namespace AiPing
                 client.TrackTrace($"HelloWorld{id}!");
                 client.TrackEvent($"HelloWorld!{id}");
                 Console.WriteLine("\t AI Ping end");
+                Thread.Sleep(500);
             }
             Console.WriteLine("AiPing End.");
 
