@@ -1,7 +1,9 @@
 ﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace AiPing
 {
@@ -20,26 +22,41 @@ namespace AiPing
             string aikey = args[1];
 
             // set develop mode
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
+            //TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
             TelemetryConfiguration.Active.InstrumentationKey = aikey;
             var client = new TelemetryClient();
+            client.Context.User.Id = "AiPing";
+            client.Context.Device.Id = System.Net.Dns.GetHostName();
 
-            for (int i = 0; i < num; i++)
+            try
             {
-                var id = i + 1;
-                Console.WriteLine($"AiPing {id} Start:");
+                for (int i = 0; i < num; i++)
+                {
+                    var id = i + 1;
+                    Console.WriteLine($"AiPing {id} Start:");
 
-                Trace.TraceInformation($"TraceInformation{id}");
-                Trace.TraceWarning($"TraceWarning{id}");
-                Trace.TraceError($"TraceError{id}");
-                Console.WriteLine("\t Trace ping end.");
+                    Trace.TraceInformation($"TraceInformation {id}.");
+                    Trace.TraceWarning($"TraceWarning {id}.");
+                    Trace.TraceError($"TraceError {id}.");
+                    Console.WriteLine("\t Trace ping end.");
 
-                client.TrackTrace($"HelloWorld{id}!");
-                client.TrackEvent($"HelloWorld!{id}");
-                Console.WriteLine("\t AI Ping end");
+                    client.TrackTrace($"HelloWorld {id}!");
+                    client.TrackEvent($"HelloWorld {id}!");
+                    var properties = new Dictionary<string, string>
+                                        {{"AiException", "AiException Text"}};
+                    var measurements = new Dictionary<string, double>
+                                        {{"AiMeasure",100.0 }};
+                    client.TrackException(new Exception($"AiException {id}"), properties, measurements);
+                    Console.WriteLine("\t AI Ping end");
+                    Thread.Sleep(100);
+                }
+                Console.WriteLine("AiPing End.");
             }
-            Console.WriteLine("AiPing End.");
-
+            catch (Exception ex)
+            {
+                client.TrackException(ex);
+                Console.WriteLine(ex.Message);
+            }
             Console.ReadLine();
         }
     }
